@@ -2,7 +2,7 @@ import React from 'react';
 import "./EditInfoIcon.css";
 
 
-export default function EditInfoIcon({ text}) {
+export default function EditInfoIcon() {
     const [show, setShow] = React.useState(false);
     return (
         // <div>

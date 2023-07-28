@@ -35,3 +35,12 @@ export const validateForm = (formData) => {
     return errors;
 }
 
+export function validateEmail(emailid) {
+    if (emailid === "") {
+        return false;
+    }
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(emailid);
+
+}
+

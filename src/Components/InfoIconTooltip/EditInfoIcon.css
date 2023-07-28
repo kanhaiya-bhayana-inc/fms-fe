@@ -19,7 +19,9 @@
     position: absolute;
     top: 105px;
     left: 22px;
+    padding: 5px;
     background-color: white;
+    border: 1px solid;
     width: 415px;
     z-index:1;
 }

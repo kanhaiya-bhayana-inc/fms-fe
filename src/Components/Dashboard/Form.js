@@ -8,6 +8,18 @@ import downloadFixedLengthTemplateFile from '../../files/fixed_length_template_f
 
 import { pathConfiguration, infoDescriptions } from '../../utility/StaticDetails';
 import ProgressPage from './ProgressPage';
+import Select from "react-select";
+import {
+    fetchDelimiterOptions,
+    fetchFiledateOptions,
+    fetchFiletypeOptions,
+    fetchVendorOptions
+} from '../APIs/DropdownOptions/api';
+
+import { fetchAllFileRecords, insertFileRecord } from '../APIs/FileRecords/api';
+import  {mapData, vendorDataFilter} from '../../mapper/dataMapper';
+import { validateEmail } from './formValidation';
+
 
 
 
@@ -15,12 +27,15 @@ import ProgressPage from './ProgressPage';
 
 export default function Form() {
     const [api, contextHolder] = notification.useNotification();
+
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState(new FormData());
     const [fileName, setFileName] = useState("");
     const [vendorName, setVendorName] = useState("");
+
     let sourcepath = pathConfiguration.sourcepathprefix + `${vendorName}/${fileName}` + pathConfiguration.sourcepathsufix;
     let destinationpath = pathConfiguration.destinationpathprefix + `${vendorName}/${fileName}`;
+
     const [FixedLength, setFixedLength] = useState(false);
     const [IsActive, setIsActive] = useState(true);
     const [delimiterData, setDelimiterData] = useState([]);
@@ -30,245 +45,81 @@ export default function Form() {
     const [editMode, setEditMode] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [records, setRecords] = useState([]);
-    const [filterRecordsData,setFilterRecordsData] = useState([]);
-    const[filesListDisplay,setFilesListDisplay] = useState(false);
+    const [filterRecordsData, setFilterRecordsData] = useState([]);
+    const [filesListDisplay, setFilesListDisplay] = useState(false);
+    
 
+    const [selected, setSelected] = useState(null);
+
+    const handleChangeSelectFile = (selectedOption) => {
+        setSelected(selectedOption);
+    };
+
+    // --- Style for Slect list display---
+    const customStyles = {
+        option: (defaultStyles, state) => ({
+            ...defaultStyles,
+            color: state.isSelected ? "" : "",
+            backgroundColor: state.isSelected ? "" : "",
+            textAlign: "left"
+        }),
+        control: (defaultStyles) => ({
+            ...defaultStyles,
+            width: "408px",
+            textAlign: "left"
+        }),
+        singleValue: (defaultStyles) => ({ ...defaultStyles, color: "" }),
+    };
+
+    // --- Display the success and error notification --- 
     const openNotificationWithIcon = (type, msg, des) => {
         api[type]({
             message: msg,
             description: des
         });
     };
+
+    
     const handleDropdownChange = (e) => {
         const { name, value } = e.target;
         formData.set(name, value);
     };
-    const handleDropdownChange1 = (e) => {
-        const { name, value } = e.target;
-        setVendorName(value);
-    };
+    
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        formData.set('templatefile', file)
-
-    }
-    function validateEmail(emailid) {
-        if (emailid === "") {
-            return false;
-        }
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(emailid);
-
-    }
-
-
-    const delimiterDropdownOptions = () => {
-        fetch('https://localhost:7116/api/Data/GetDelimiters', {
-            method: 'GET',
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE",
-            },
-
-
-        })
-            .then((response) => {
-                if (response.ok) {
-                    // File uploaded successfully
-                    return response.json(); // Parse the response body as JSON
-                } else {
-
-                    throw new Error('Error fetching dropdownoptions');
-                }
-            })
-            .then((data) => {
-                // Access the response data
-                console.log(data);
-                if (data) {
-                    setLoading(false);
-                    setDelimiterData(data);
-                    console.log('Fetched successfully');
-                }
-                else {
-                    openNotificationWithIcon('error', 'Error fetching dropdownoptions', data.status)
-                }
-            })
-            .catch((error) => {
-                if (error == "TypeError: Failed to fetch") {
-                    setLoading(false);
-                    openNotificationWithIcon('error', 'Server error', 'Server is not running up dropdown.')
-                }
-            });
-    }
-
-    const vendorDropdownOptions = () => {
-        fetch('https://localhost:7116/api/Data/GetVendorDetails', {
-            method: 'GET',
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE",
-            },
-
-
-        })
-            .then((response) => {
-                if (response.ok) {
-                    // File uploaded successfully
-                    return response.json(); // Parse the response body as JSON
-                } else {
-
-                    throw new Error('Error fetching dropdownoptions');
-                }
-            })
-            .then((data) => {
-                // Access the response data
-                console.log(data);
-                if (data) {
-                    setLoading(false);
-                    setVendorData(data);
-                    console.log('Fetched successfully');
-
-                }
-                else {
-                    openNotificationWithIcon('error', 'Error fetching dropdownoptions', data.status)
-                }
-            })
-            .catch((error) => {
-                if (error == "TypeError: Failed to fetch") {
-                    setLoading(false);
-                    openNotificationWithIcon('error', 'Server error', 'Server is not running up.')
-                }
-            });
-    }
-
-    const filedateDropdownOptions = () => {
-        fetch('https://localhost:7116/api/Data/GetFiledateDetails', {
-            method: 'GET',
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE",
-            },
-
-
-        })
-            .then((response) => {
-                if (response.ok) {
-                    // File uploaded successfully
-                    return response.json(); // Parse the response body as JSON
-                } else {
-
-                    throw new Error('Error fetching dropdownoptions');
-                }
-            })
-            .then((data) => {
-                // Access the response data
-                console.log(data);
-                if (data) {
-                    setLoading(false);
-                    setfiledateData(data);
-                    console.log('Fetched successfully');
-
-                }
-                else {
-                    openNotificationWithIcon('error', 'Error fetching dropdownoptions', data.status)
-                }
-            })
-            .catch((error) => {
-                if (error == "TypeError: Failed to fetch") {
-                    setLoading(false);
-                    openNotificationWithIcon('error', 'Server error', 'Server is not running up.')
-                }
-            });
-    }
-
-    const filetypeDropdownOptions = () => {
-        fetch('https://localhost:7116/api/Data/GetFiletypeDetails', {
-            method: 'GET',
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE",
-            },
-        })
-            .then((response) => {
-                if (response.ok) {
-                    // File uploaded successfully
-                    return response.json(); // Parse the response body as JSON
-                } else {
-                    throw new Error('Error fetching dropdownoptions');
-                }
-            })
-            .then((data) => {
-                // Access the response data
-                console.log(data);
-                if (data) {
-                    setLoading(false);
-                    setfiletypeData(data);
-                    console.log('Fetched successfully');
-
-                }
-                else {
-                    openNotificationWithIcon('error', 'Error fetching dropdownoptions', data.status)
-                }
-            })
-            .catch((error) => {
-                if (error == "TypeError: Failed to fetch") {
-                    setLoading(false);
-                    openNotificationWithIcon('error', 'Server error', 'Server is not running up.')
-                }
-            });
-    }
-
-    const filesRecords = () => {
-        fetch('https://localhost:7116/api/Data/GetAllFilesDetails', {
-            method: 'GET',
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE",
-            },
-        })
-            .then((response) => {
-                if (response.ok) {
-                    // File uploaded successfully
-                    return response.json(); // Parse the response body as JSON
-                } else {
-                    throw new Error('Error fetching dropdownoptions');
-                }
-            })
-            .then((data) => {
-                // Access the response data
-                console.log(data);
-                if (data) {
-                    setLoading(false);
-                    setRecords(data);
-                    console.log('Fetched successfully');
-
-                }
-                else {
-                    openNotificationWithIcon('error', 'Error fetching dropdownoptions', data.status)
-                }
-            })
-            .catch((error) => {
-                if (error == "TypeError: Failed to fetch") {
-                    setLoading(false);
-                    openNotificationWithIcon('error', 'Server error', 'Server is not running up.')
-                }
-            });
-    }
 
     useEffect(() => {
-        delimiterDropdownOptions();
-        vendorDropdownOptions();
-        filedateDropdownOptions();
-        filetypeDropdownOptions();
-        filesRecords();
-        console.log(typeof(records));
-    }, [])
-    
+        fetchDelimiterOptions()
+            .then((data) => setDelimiterData(data))
+            .catch((error) => console.error('error setting dropdown options:', error));
+
+        fetchFiledateOptions()
+            .then((data) => setfiledateData(data))
+            .catch((error) => console.error('error setting dropdown options:', error));
+
+        fetchVendorOptions()
+            .then((data) => setVendorData(data))
+            .catch((error) => console.error('error setting dropdown options:', error));
+
+        fetchFiletypeOptions()
+            .then((data) => setfiletypeData(data))
+            .catch((error) => console.error('error setting dropdown options:', error));
+
+        fetchAllFileRecords()
+            .then((data) => setRecords(data))
+            .catch((error) => console.error('error setting dropdown options:', error));
+
+           
+        }, [])
+
+    // changing the list of file-select on the basis of vendor name...
+    var vendorFiles =[];
+    if (vendorName){
+        var vID = vendorData.find(item => item.name === vendorName);
+        vendorFiles = vendorDataFilter(records,vID.id);
+    }
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        // const tempName = vendorData.get()
         var vID = vendorData.find(item => item.name === vendorName);
         formData.set('sourcepath', sourcepath);
         formData.set('destinationpath', destinationpath);
@@ -284,130 +135,38 @@ export default function Form() {
             openNotificationWithIcon('error', 'try agian', 'Please enter a valid email.')
         }
         else {
-            console.log("come here");
-            console.log([...formData.entries()]);
-            fetch('https://localhost:7116/api/file/UploadFile', {
-                method: 'POST',
-                headers: {
-                    // "Content-Type": "multipart/form-data",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE",
-                },
-                body: formData,
-
-            })
-                .then((response) => {
-                    if (response.ok) {
-                        // File uploaded successfully
-                        return response.json(); // Parse the response body as JSON
-                    } else {
-
-                        throw new Error('Error uploading file');
-                    }
-                })
-                .then((data) => {
-                    // setFormData(new FormData());
-                    // Access the response data
-                    if (data.error == false) {
-                        setLoading(false);
-                        console.log('File uploaded successfully');
-                        openNotificationWithIcon('success', 'File uploaded successfully', data.status)
-                    }
-                    else {
-                        setLoading(false);
-                        openNotificationWithIcon('error', 'Error uploading file', data.status)
-                        console.log('Error occured.');
-                    }
-                })
-                .catch((error) => {
-                    sourcepath = "";
-                    destinationpath = "";
-                    setFileName("");
-                    setVendorName("");
-                    setFixedLength(false);
-                    // setIsActive(false);
-                    // console.log([...formData.entries()]);
-                    console.log("null ho gyi");
-                    if (error == "TypeError: Failed to fetch") {
-                        setLoading(false);
-                        openNotificationWithIcon('error', 'Server error', 'Server is not running up.')
-                    } else {
-                        setLoading(false);
-                        openNotificationWithIcon('error', 'Error uploading file', error.message.toString())
-                        console.error('Error uploading file jjj:', error.message.toString());
-                    }
-                });
+            const res = insertFileRecord(formData);
+            res.then((data) => {
+                        if (data.error == false) {
+                            setLoading(false);
+                            
+                            openNotificationWithIcon('success', 'File uploaded successfully', data.status)
+                        }
+                        else {
+                            setLoading(false);
+                            openNotificationWithIcon('error', 'Error uploading file', data.status)
+                        }
+                    }).catch((error)=>{
+                        console.log('error: ',error);
+                    })
         };
-
     }
 
-    const delimiterOptions = delimiterData.map((data, i) => {
-        return (
-            <option key={i} value={data.id}>{data.name} {data.description}</option>
-        )
-    })
-
-    const vendorOptions = vendorData.map((data, i) => {
-        return (
-            <option key={i} value={data.name}>{data.name}</option>
-        )
-    })
-
-    const filedateOptions = filedateData.map((data, i) => {
-        return (
-            <option key={i} value={data.id}>{data.name}</option>
-        )
-    })
-
-    const filetypeOptions = filetypeData.map((data, i) => {
-        return (
-            <option key={i} value={data.id}>{data.name}</option>
-        )
-    })
-
-    // const concernedElement = document.querySelector("#browser");
-    // document.addEventListener("mousedown", (e) => {
-    //     // console.log(concernedElement, e.target);
-    //     if (editMode && concernedElement.contains(e.target) ) {
-    //         setInputValue("");
-        
-    //     }
-    //   });
-
-    const handleEditClick = () => {
-        setEditMode(true);
-      };
-      const handleInputChange = (e) =>{
-        const value = e.target.value;
-        setInputValue(value);
-
-        const filterRecords = records.filter(rec =>
-            rec.fileName.toString().toLowerCase().includes(value.toString().toLowerCase())
-        );
-
-        setFilterRecordsData(filterRecords);
-        if (filterRecordsData){
-
-            setFilesListDisplay(true);
-        }
-
-      }
-      const selectListFile =(e)=>{
+    const selectListFile = (e) => {
         setInputValue(e);
         setFilesListDisplay(false);
-      }
+    }
 
-    const filesData = filterRecordsData.map((data,ind)=>{
-        return(
-            <li key={ind} className="list-group-item" style={{"textAlign": "left"}} onClick={() => selectListFile(data.fileName)}>{data.fileName}</li>
-        );
-    })
-    // const filesData = records.map(file => file.fileName);
+    const fileNamesAndIds = mapData(records);
+
+    const VendorFileNamesAndIds = mapData(vendorFiles);
+
+ 
     return (
         <div>
 
             <div className={styles.editContainer}>
-                <button className={"btn" + " " + styles.buttonBgColor} onClick={handleEditClick} data-bs-toggle="tooltip" data-bs-placement="bottom" title={infoDescriptions.editinfodescription}>Edit <i className="bi bi-pencil"></i></button>
+                <button className={"btn" + " " + styles.buttonBgColor} onClick={()=>setEditMode(true)} data-bs-toggle="tooltip" data-bs-placement="bottom" title={infoDescriptions.editinfodescription}>Edit <i className="bi bi-pencil"></i></button>
                 {/* <EditInfoIcon description={infoDescriptions.editinfodescription} /> */}
             </div>
             <div className='container'>
@@ -416,7 +175,7 @@ export default function Form() {
                     loading ? <ProgressPage /> : <>
                         <form>
 
-                            <div className='row p-3' style={{ position: 'relative'}}>
+                            <div className='row p-3' style={{ position: 'relative' }}>
                                 <div className='col-4 p-2'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputFileName" className={"p-2" + " " + styles.labelDark}>Filename</label>
@@ -426,17 +185,9 @@ export default function Form() {
                                             </>
                                             :
                                             <>
-                                                <input list="browsers" name="browser" id="browser" value={inputValue} onChange={handleInputChange} className="form-control" placeholder='Search file here...' />
-                                              {filesListDisplay && inputValue ?  
-                                                <>
-                                                <ul className={"list-group "+styles.filesList}>
-                                                 
-                                                    {filesData}
-                                                </ul>
-                                                    
-                                                </> : ""  
-                                            }  
-                                               
+                                                <div className="m-auto">
+                                                    <Select options={vendorName ? VendorFileNamesAndIds : fileNamesAndIds} value={selected} components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }} onChange={handleChangeSelectFile} autoFocus={true} styles={customStyles} />
+                                                </div>
                                             </>
                                         }
                                     </div>
@@ -449,8 +200,12 @@ export default function Form() {
                                         <br />
                                         <select required onChange={handleDropdownChange} name="filedate" className={"custom-select btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
-                                           
-                                            {filedateOptions}
+
+                                            {filedateData.map((data, i) => {
+                                                return (
+                                                    <option key={i} value={data.id}>{data.name}</option>
+                                                )
+                                            })}
                                         </select>
                                     </div>
                                 </div>
@@ -460,10 +215,14 @@ export default function Form() {
 
                                         <label className={"p-2" + " " + styles.labelDark}>Vendor Name</label>
                                         <br />
-                                        <select required onChange={handleDropdownChange1} name="vendorname" className={"custom-select btn" + " " + styles.dropdownInput} >
-                                            <option defaultValue>Select</option>
-                                           
-                                            {vendorOptions}
+                                        <select required onChange={(e)=>{setVendorName(e.target.value);setSelected(null);}} value={vendorName} name="vendorname" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                            <option defaultValue value="">Select</option>
+
+                                            {vendorData.map((data, i) => {
+                                                return (
+                                                    <option key={i} value={data.name}>{data.name}</option>
+                                                )
+                                            })}
                                         </select>
 
 
@@ -480,7 +239,7 @@ export default function Form() {
                                 <div className={'col-4 p-2'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2" + " " + styles.labelDark}>Destination Path</label>
-                                        <input type="text" readOnly value={destinationpath} style={{"width":"350px"}} className={styles.disableInput + " " + "form-control"} id="exampleInputDestinationPath" placeholder="Enter destination path..." />
+                                        <input type="text" readOnly value={destinationpath} style={{ "width": "350px" }} className={styles.disableInput + " " + "form-control"} id="exampleInputDestinationPath" placeholder="Enter destination path..." />
                                     </div>
                                 </div>
                                 <div className='col-4 p-2'>
@@ -489,8 +248,12 @@ export default function Form() {
                                         <br />
                                         <select required onChange={handleDropdownChange} name="fileType" className={"custom-select btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
-                                            
-                                            {filetypeOptions}
+
+                                            {filetypeData.map((data, i) => {
+                                                return (
+                                                    <option key={i} value={data.id}>{data.name}</option>
+                                                )
+                                            })}
                                         </select>
                                     </div>
                                 </div>
@@ -524,8 +287,13 @@ export default function Form() {
                                         <br />
                                         <select onChange={handleDropdownChange} name="delimiter" className={"custom-select btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
-                                            
-                                            {delimiterOptions}
+
+                                            {delimiterData.map((data, i) => {
+                                                return (
+                                                    <option key={i} value={data.id}>{data.name} {data.description}</option>
+                                                );
+                                            })
+                                            }
                                         </select>
                                     </div>
                                 </div>
@@ -552,7 +320,7 @@ export default function Form() {
                                     <div className={"form-group" + " " + styles.colDisplay}>
 
                                         <label htmlFor="exampleInputTemplateFile" className={"p-2" + " " + styles.labelDark}>Template File</label>
-                                        <input onChange={handleFileChange} type="file" className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateDownload" />
+                                        <input onChange={(e) => formData.set('templatefile', e.target.files[0])} type="file" className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateDownload" />
                                     </div>
                                 </div>
 
@@ -581,7 +349,7 @@ export default function Form() {
                                 <div className='col-4 p-2'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputEmail" className={"p-2" + " " + styles.labelDark}>Email</label>
-                                        <input onChange={(e) => formData.set('emailid', e.target.value)} type="email" style={{"width":"300px"}} className="form-control" id="exampleInputEmail" placeholder="Enter email..." />
+                                        <input onChange={(e) => formData.set('emailid', e.target.value)} type="email" style={{ "width": "300px" }} className="form-control" id="exampleInputEmail" placeholder="Enter email..." />
                                     </div>
 
                                 </div>
