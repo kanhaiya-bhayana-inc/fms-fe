@@ -1,0 +1,103 @@
+.disableInput{
+    background-color: lightgray;
+}
+
+.dropdownInput{
+    border: 0.5px solid lightgray;
+    float: left;
+    /* margin-right: 200px; */
+    width: 350px;
+    /* padding: 4px; */
+}
+
+.downloadFileIcon{
+    font-size: x-large;
+    color: lightslategrey;
+    float: left;
+
+    
+}
+.downloadFileIcon:hover{
+    color: #174A81;
+}
+
+.labelDark{
+    font-weight: 600;
+    float: left;
+}
+
+.buttonBgColor{
+    background-color: #174A81;
+    color: white;
+}
+.buttonBgColor:hover{
+    border: 1px solid black;
+    background-color: white;
+    color: black;
+}
+
+.colDisplay{
+    /* display: flex; */
+    /* float: left; */
+}
+.checkBox{
+    /* margin-bottom: 20px;
+    border-color: #174A81;
+    background-color: red;
+     */
+     float: left;
+     margin-top: 45px;
+}
+.checkboxiconFixedlength{
+    margin-left: -95px;
+}
+.checkboxiconDownload{
+    margin-left: -175px;
+    margin-top: 5px;
+}
+.checkboxiconIsactive{
+    margin-left: -65px;
+}
+
+
+.selectFileInput{
+    width: 350px;
+}
+
+.editButton{
+    /* float: right; */
+    /* margin-top: 34px; */
+    /* margin-right: 120px; */
+    background-color: #174A81;
+    color: white;
+}
+.editButton:hover{
+    border: 1px solid black;
+    background-color: white;
+    color: black;
+}
+
+.editContainer{
+    /* width: fit-content; */
+    height: fit-content;
+    display: flex;
+    float: right;
+    margin-top: 34px;
+    margin-right: 120px;
+}
+
+.TextFieldheight{
+    height: 20px;
+}
+.filesList{
+        position: absolute;
+        top: 105px;
+        left: 22px;
+        background-color: white;
+        width: 415px;
+        z-index:1;
+}
+
+.seachableFileDropdown{
+    width: 408px;
+}
