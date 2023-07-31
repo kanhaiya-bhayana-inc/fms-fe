@@ -11,3 +11,5 @@ export function mapData(obj){
 export function vendorDataFilter(obj,id){
     return obj.filter((data)=> data.clientID === id.toString());
 }
+
+

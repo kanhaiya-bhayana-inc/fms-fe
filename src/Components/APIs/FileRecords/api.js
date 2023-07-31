@@ -28,7 +28,7 @@ export async function insertFileRecord(formData){
         const data = await response.json();
         return data;
     } catch(error){
-        console.log('Error fetching vendor dropdown options:', error);
+        console.log('Error while uploading:', error);
         return [];
     }
 }

@@ -3,27 +3,18 @@ import "./EditInfoIcon.css";
 
 
 export default function EditInfoIcon() {
-    const [show, setShow] = React.useState(false);
-    return (
-        // <div>
-        //     <Tooltip title={description}>
-        //         <IconButton>
-        //             <i className="bi bi-info-circle"></i>
-        //         </IconButton>
-        //     </Tooltip>
-        // </div>
-        <div>
-      <div>
-        <h1 
-            onMouseEnter={() => setShow(true)}
-            onMouseLeave={() => setShow(false)}
-        >Hola</h1>
+  const [show, setShow] = React.useState(false);
+  return (
+    <div>
+        <div id='info' style={{"padding":"5px"}}
+          onMouseEnter={() => setShow(true)}
+          onMouseLeave={() => setShow(false)}
+        ><i class="bi bi-info-circle"></i>
+        </div>
 
-      </div>
-      {/* {show ? "JDkjsfldjsdf" :""} */}
-      {show?<div className='filesList'>
-        Officia qui id ut irure veniam sunt anim. Commodo amet proident esse culpa irure mollit culpa occaecat sunt exercitation. Cupidatat consectetur id sint anim nostrud ut eiusmod sint. Commodo consequat tempor laborum consequat. Et aliqua laboris quis ex et laborum ipsum aute reprehenderit aute ea. Incididunt Lorem ad exercitation id incididunt fugiat dolore ea est elit deserunt. Laboris officia aliqua commodo adipisicing est nisi incididunt sint ex.
-      </div>:""}
+      {show ? <div className='filesList'>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      </div> : ""}
     </div>
-    )
+  )
 }
