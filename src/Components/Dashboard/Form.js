@@ -16,9 +16,14 @@ import {
     fetchVendorOptions
 } from '../APIs/DropdownOptions/api';
 
-import { fetchAllFileRecords, insertFileRecord } from '../APIs/FileRecords/api';
+import { 
+    fetchAllFileRecords, 
+    insertFileRecord
+} from '../APIs/FileRecords/api';
+
 import  {mapData, vendorDataFilter} from '../../mapper/dataMapper';
 import { validateEmail } from './formValidation';
+import EditInfoIcon from '../InfoIconTooltip/EditInfoIcon';
 
 
 
@@ -26,34 +31,140 @@ import { validateEmail } from './formValidation';
 
 
 export default function Form() {
-    const [api, contextHolder] = notification.useNotification();
+    const formInitialState = {
+        fileMasterId:'',
+        fileName: '',
+        fileDate: '',
+        vendorName: '',
+        sourcePath: '',
+        destinationPath: '',
+        fileTypeID: '',
+        dbNotebook: '',
+        insertionMode: '',
+        delimiter: '',
+        fixedLength: false,
+        templateFile: null,
+        isActive: '',
+        sampleFile: null,
+        emailID: '',
+      };
 
-    const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState(new FormData());
-    const [fileName, setFileName] = useState("");
-    const [vendorName, setVendorName] = useState("");
-
-    let sourcepath = pathConfiguration.sourcepathprefix + `${vendorName}/${fileName}` + pathConfiguration.sourcepathsufix;
-    let destinationpath = pathConfiguration.destinationpathprefix + `${vendorName}/${fileName}`;
-
+    const [formInputData, setFormInputData] = useState(formInitialState);
+    
+    // const [vendorName, setVendorName] = useState("");
     const [FixedLength, setFixedLength] = useState(false);
-    const [IsActive, setIsActive] = useState(true);
+    
+    const [formData, setFormData] = useState(new FormData());
+    let sourcepath = pathConfiguration.sourcepathprefix + `${formInputData.vendorName}/${formInputData.fileName}` + pathConfiguration.sourcepathsufix;
+    let destinationpath = pathConfiguration.destinationpathprefix + `${formInputData.vendorName}/${formInputData.fileName}`;
+    
+    
+    // Local Arrays for storing the data of form dropdowns and files...
     const [delimiterData, setDelimiterData] = useState([]);
     const [vendorData, setVendorData] = useState([]);
     const [filedateData, setfiledateData] = useState([]);
     const [filetypeData, setfiletypeData] = useState([]);
     const [editMode, setEditMode] = useState(false);
-    const [inputValue, setInputValue] = useState('');
     const [records, setRecords] = useState([]);
-    const [filterRecordsData, setFilterRecordsData] = useState([]);
-    const [filesListDisplay, setFilesListDisplay] = useState(false);
     
-
+    
+    const [api, contextHolder] = notification.useNotification();
+    const [loading, setLoading] = useState(false);
     const [selected, setSelected] = useState(null);
 
+    // Setting all the properties of the file...
+    const handleChangeTest = (event) => {
+        const { name, value } = event.target;
+        setFormInputData((prevFormData) => ({
+          ...prevFormData,
+          [name]: value,
+        }));
+        // edge case if vendor name changes then you need to again select the file for the new vendor...
+        if (name == "vendorName"){
+            setSelected(null);
+        }
+      };
+
+      
+// Setting the file values...
+      const handleFileChangeTest = (event) => {
+        const file = event.target.files[0];
+        const {name} = event.target;
+        setFormInputData((prevFormData) => ({
+          ...prevFormData,
+          [name]:file,
+        }));
+      };
+
+    //   Setting the checkbox values...
+      const handleCheckboxChangeTest = (event) => {
+        const { name, checked } = event.target;
+        setFormInputData((prevFormInputData) => ({
+          ...prevFormInputData,
+          [name]: checked,
+        }));
+      };
+
+    //   Sumbitting the form and making the fetch Post call...
+      const handleSubmitTest = (e)=>{
+        e.preventDefault();
+        formInputData.sourcePath = sourcepath;
+        formInputData.destinationPath = destinationpath;
+        var vID = vendorData.find(item => item.name === formInputData.vendorName);        
+        const formDataTest = new FormData();
+
+        // Iterate through the formInputData object and append all fields to formData
+        for (const [key, value] of Object.entries(formInputData)) {
+            formDataTest.append(key, value);
+            // console.log(key, " -" , value);
+        }
+        // edge case for mapping vendorName to clientId for making the fetch call...
+        if(isNaN(formDataTest.get('vendorName'))){
+            formDataTest.set('vendorName',vID.id);
+        }
+        // for (const [key, value] of formDataTest) {
+        //     console.log(key, value);
+        //   }
+        
+        let email = formDataTest.get('emailID');
+        setLoading(true);
+
+        if (!validateEmail(email)) {
+            setLoading(false);
+            openNotificationWithIcon('error', 'try agian', 'Please enter a valid email.')
+        }
+        else {
+            console.log('jjjj');
+            const res = insertFileRecord(formDataTest);
+            res.then((data) => {
+                        if (data.error == false) {
+                            setLoading(false);
+                            
+                            openNotificationWithIcon('success', 'File uploaded successfully', data.status);
+                            // setFormInputData(data.data);
+                            // console.log(data.data);
+                        }
+                        else {
+                            setLoading(false);
+                            openNotificationWithIcon('error', 'Error uploading file', data.status)
+                        }
+                    }).catch((error)=>{
+                        console.log('error: ',error);
+                    })
+        };
+        
+      }
+
+     
+// Select the file from the search bar...
     const handleChangeSelectFile = (selectedOption) => {
         setSelected(selectedOption);
+        
     };
+
+   
+        
+    
 
     // --- Style for Slect list display---
     const customStyles = {
@@ -80,13 +191,39 @@ export default function Form() {
     };
 
     
-    const handleDropdownChange = (e) => {
-        const { name, value } = e.target;
-        formData.set(name, value);
-    };
+   
     
+// for file selection and set the properties of that file...
+useEffect(()=>{
+    if (selected){
+        console.log('Not');
+        let id = selected.value;
+        let row = records.find((item)=> item.fileMasterId === id);
+        if (row.fixedLength === "false"){
+            row.fixedLength = false;
+        }
+        if (row.isActive === "false"){
+            row.isActive = false;
+        }
+        if (row.fixedLength === "true"){
+            row.fixedLength = true;
+        }
+        if (row.isActive === "true"){
+            row.isActive = true;
+        }
+        // reverse mapping of clientID --> Vendor Name
+        var vID = vendorData.find(item => item.id == row.clientID);  
+        row.vendorName = vID.name;
+        console.log('vid: ',vID);
+        console.log('Selected row: ', row);
+        setFormInputData(row);
+        console.log('my data:',formInputData);
+        
 
+    }
+},[selected])
 
+// for fetching all the dropdown data and file records...
     useEffect(() => {
         fetchDelimiterOptions()
             .then((data) => setDelimiterData(data))
@@ -113,49 +250,14 @@ export default function Form() {
 
     // changing the list of file-select on the basis of vendor name...
     var vendorFiles =[];
-    if (vendorName){
-        var vID = vendorData.find(item => item.name === vendorName);
+    if (formInputData.vendorName){
+        // mapping of Vendor Name --> ClientID...
+        var vID = vendorData.find(item => item.name === formInputData.vendorName);
         vendorFiles = vendorDataFilter(records,vID.id);
     }
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        var vID = vendorData.find(item => item.name === vendorName);
-        formData.set('sourcepath', sourcepath);
-        formData.set('destinationpath', destinationpath);
-        formData.set('filename', fileName);
-        formData.set('vendorname', vID.id);
-        formData.set('fixedlength', FixedLength);
-        formData.set('isactive', IsActive);
-        let email = formData.get('emailid');
-        setLoading(true);
-
-        if (!validateEmail(email)) {
-            setLoading(false);
-            openNotificationWithIcon('error', 'try agian', 'Please enter a valid email.')
-        }
-        else {
-            const res = insertFileRecord(formData);
-            res.then((data) => {
-                        if (data.error == false) {
-                            setLoading(false);
-                            
-                            openNotificationWithIcon('success', 'File uploaded successfully', data.status)
-                        }
-                        else {
-                            setLoading(false);
-                            openNotificationWithIcon('error', 'Error uploading file', data.status)
-                        }
-                    }).catch((error)=>{
-                        console.log('error: ',error);
-                    })
-        };
-    }
-
-    const selectListFile = (e) => {
-        setInputValue(e);
-        setFilesListDisplay(false);
-    }
+   
+    
 
     const fileNamesAndIds = mapData(records);
 
@@ -166,7 +268,8 @@ export default function Form() {
         <div>
 
             <div className={styles.editContainer}>
-                <button className={"btn" + " " + styles.buttonBgColor} onClick={()=>setEditMode(true)} data-bs-toggle="tooltip" data-bs-placement="bottom" title={infoDescriptions.editinfodescription}>Edit <i className="bi bi-pencil"></i></button>
+                <button className={"btn" + " " + styles.buttonBgColor} onClick={()=>setEditMode(true)} data-bs-toggle="tooltip" data-bs-placement="bottom" title={infoDescriptions.editinfodescription}><i className="bi bi-pencil"></i></button>&nbsp; <EditInfoIcon />
+                {editMode?<button className={"btn" + " " + styles.buttonBgColor} onClick={()=>{setEditMode(false);setFormInputData(formInitialState);}} data-bs-toggle="tooltip" data-bs-placement="bottom"> <i className="bi bi-x-circle"></i></button>:""}
                 {/* <EditInfoIcon description={infoDescriptions.editinfodescription} /> */}
             </div>
             <div className='container'>
@@ -181,12 +284,12 @@ export default function Form() {
                                         <label htmlFor="exampleInputFileName" className={"p-2" + " " + styles.labelDark}>Filename</label>
                                         {!editMode ?
                                             <>
-                                                <input type="text" required onChange={(e) => setFileName(e.target.value)} className="form-control" id="exampleInputFileName" placeholder="Enter file name..." />
+                                                <input type="text" required onChange={handleChangeTest} value={formInputData.fileName} name='fileName' className="form-control" id="exampleInputFileName" placeholder="Enter file name..." />
                                             </>
                                             :
                                             <>
                                                 <div className="m-auto">
-                                                    <Select options={vendorName ? VendorFileNamesAndIds : fileNamesAndIds} value={selected} components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }} onChange={handleChangeSelectFile} autoFocus={true} styles={customStyles} />
+                                                    <Select options={formInputData.vendorName ? VendorFileNamesAndIds : fileNamesAndIds} value={selected} components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }} onChange={handleChangeSelectFile} autoFocus={true} styles={customStyles} />
                                                 </div>
                                             </>
                                         }
@@ -198,7 +301,7 @@ export default function Form() {
 
                                         <label className={"p-2" + " " + styles.labelDark}>FileDate</label>
                                         <br />
-                                        <select required onChange={handleDropdownChange} name="filedate" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select required onChange={handleChangeTest} value={formInputData.fileDate} name="fileDate" className={"custom-select btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
 
                                             {filedateData.map((data, i) => {
@@ -215,7 +318,7 @@ export default function Form() {
 
                                         <label className={"p-2" + " " + styles.labelDark}>Vendor Name</label>
                                         <br />
-                                        <select required onChange={(e)=>{setVendorName(e.target.value);setSelected(null);}} value={vendorName} name="vendorname" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select required onChange={handleChangeTest} value={formInputData.vendorName} name="vendorName" className={"custom-select btn" + " " + styles.dropdownInput} >
                                             <option defaultValue value="">Select</option>
 
                                             {vendorData.map((data, i) => {
@@ -246,7 +349,7 @@ export default function Form() {
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2" + " " + styles.labelDark}>Allowed File</label>
                                         <br />
-                                        <select required onChange={handleDropdownChange} name="fileType" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select required value={formInputData.fileTypeID} onChange={handleChangeTest} name="fileTypeID" className={"custom-select btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
 
                                             {filetypeData.map((data, i) => {
@@ -263,7 +366,7 @@ export default function Form() {
                                 <div className='col-4 p-2'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputDbnotebook" className={"p-2" + " " + styles.labelDark}>DBNotebook</label>
-                                        <input type="text" onChange={(e) => formData.set('dbnotebook', e.target.value)} className="form-control" id="exampleInputDbnotebook" placeholder="Enter dbnotebook name..." />
+                                        <input type="text" value={formInputData.dbNotebook} onChange={handleChangeTest} name='dbNotebook' className="form-control" id="exampleInputDbnotebook" placeholder="Enter dbnotebook name..." />
                                     </div>
                                 </div>
 
@@ -274,7 +377,7 @@ export default function Form() {
                                         <label className={"p-2" + " " + styles.labelDark}>Insertion Mode</label>
                                         {/* &nbsp;&nbsp;&nbsp;&nbsp; */}
                                         <br />
-                                        <select onChange={handleDropdownChange} name="insertionmode" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select onChange={handleChangeTest} value={formInputData.insertionMode} name="insertionMode" className={"custom-select btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
                                             <option value="Append">Append</option>
                                             <option value="Overwrite">Overwrite</option>
@@ -285,7 +388,7 @@ export default function Form() {
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2" + " " + styles.labelDark}>Delimiter</label>
                                         <br />
-                                        <select onChange={handleDropdownChange} name="delimiter" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select onChange={handleChangeTest} value={formInputData.delimiter} name="delimiter" className={"custom-select btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
 
                                             {delimiterData.map((data, i) => {
@@ -307,12 +410,12 @@ export default function Form() {
                                             FixedLength
                                         </label>
 
-                                        <input onChange={(e) => { setFixedLength(e.target.checked); }} checked={FixedLength} className={styles.checkBox + " " + styles.checkboxiconFixedlength} name="fixedlength" type="checkbox" />
+                                        <input onChange={handleCheckboxChangeTest} checked={formInputData.fixedLength} name="fixedLength" className={styles.checkBox + " " + styles.checkboxiconFixedlength} type="checkbox" />
                                     </div>
                                 </div>
                                 <div className={'col-4 p-2'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
-                                        <label className={"p-2" + " " + styles.labelDark}>Download template file</label><br /><a className={styles.downloadFileIcon + " " + styles.checkboxiconDownload} href={FixedLength ? downloadFixedLengthTemplateFile : downloadTemplateFile} download={FixedLength ? "Fixed length template file" : "Template file"} target='_blank' rel='noreferrer'><i className="bi bi-cloud-arrow-down-fill"></i></a>
+                                        <label className={"p-2" + " " + styles.labelDark}>Download template file</label><br /><a className={styles.downloadFileIcon + " " + styles.checkboxiconDownload} href={formData.fixedLength ? downloadFixedLengthTemplateFile : downloadTemplateFile} download={FixedLength ? "Fixed length template file" : "Template file"} target='_blank' rel='noreferrer'><i className="bi bi-cloud-arrow-down-fill"></i></a>
                                     </div>
 
                                 </div>
@@ -320,7 +423,7 @@ export default function Form() {
                                     <div className={"form-group" + " " + styles.colDisplay}>
 
                                         <label htmlFor="exampleInputTemplateFile" className={"p-2" + " " + styles.labelDark}>Template File</label>
-                                        <input onChange={(e) => formData.set('templatefile', e.target.files[0])} type="file" className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateDownload" />
+                                        <input onChange={handleFileChangeTest} type="file"   name='templateFile' className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateDownload" />
                                     </div>
                                 </div>
 
@@ -334,14 +437,14 @@ export default function Form() {
                                         <label className={"p-2 form-check-label" + " " + styles.labelDark} htmlFor="flexCheckDefault">
                                             Is Active
                                         </label>
-                                        <input onChange={(e) => { setIsActive(e.target.checked); }} checked={IsActive} disabled name="IsActive" className={styles.checkBox + " " + styles.checkboxiconIsactive} type="checkbox" />
+                                        <input onChange={handleCheckboxChangeTest} disabled={!editMode} checked={formInputData.isActive}  name="isActive" className={styles.checkBox + " " + styles.checkboxiconIsactive} type="checkbox" />
                                     </div>
 
                                 </div>
                                 <div className={'col-4 p-2'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputTemplateUpload" className={"p-2" + " " + styles.labelDark}>Sample File</label>
-                                        <input onChange={(e) => formData.set('samplefile', e.target.files[0])} type="file" className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateUpload" />
+                                        <input onChange={handleFileChangeTest} name='sampleFile'  type="file" className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateUpload" />
                                     </div>
                                 </div>
 
@@ -349,7 +452,7 @@ export default function Form() {
                                 <div className='col-4 p-2'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputEmail" className={"p-2" + " " + styles.labelDark}>Email</label>
-                                        <input onChange={(e) => formData.set('emailid', e.target.value)} type="email" style={{ "width": "300px" }} className="form-control" id="exampleInputEmail" placeholder="Enter email..." />
+                                        <input onChange={handleChangeTest} value={formInputData.emailID} type="email" name='emailID' style={{ "width": "300px" }} className="form-control" id="exampleInputEmail" placeholder="Enter email..." />
                                     </div>
 
                                 </div>
@@ -360,9 +463,10 @@ export default function Form() {
 
                                 </div>
                                 <div className='col-4 p-2'>
-                                    <button className={"btn" + " " + styles.buttonBgColor} onClick={handleSubmit}>{loading ? "Submitting..." : "Submit"}</button>
+                                    <button className={"btn" + " " + styles.buttonBgColor} onClick={handleSubmitTest}> {!editMode ? (loading ? "Submitting..." : "Submit") : "Update"}</button>
                                     &nbsp;&nbsp;
-                                    <input type='reset' className={"btn" + " " + styles.buttonBgColor} />
+                                   {/* {editMode ?"": <button  onClick={setFormInputData(formInitialState)} className={"btn" + " " + styles.buttonBgColor} >Reset</button>} */}
+                                   <button className={"btn" + " " + styles.buttonBgColor} onClick={()=>{setFormInputData(formInitialState);}} data-bs-toggle="tooltip" data-bs-placement="bottom">Reset</button>
                                 </div>
                                 <div className='col-4 p-2'>
 

@@ -17,11 +17,13 @@
 
   .filesList{
     position: absolute;
-    top: 105px;
-    left: 22px;
-    padding: 5px;
+    top: 140px;
+    left: 1380px;
+    padding: 8px;
     background-color: white;
     border: 1px solid;
     width: 415px;
     z-index:1;
+    float: right;
+    text-align: justify;
 }
