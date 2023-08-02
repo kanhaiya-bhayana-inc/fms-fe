@@ -1,6 +1,16 @@
 .mainSection{
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.9);
+    ;
+    /* margin-bottom: -50px; */
+}
+
+.tempCss2{
+    background-color: rgba(0, 0, 0, 0.2)
 }
 .fontWeight{
     font-weight: 640;
+}
+
+.footerSection{
+    margin-bottom: -50px;
 }

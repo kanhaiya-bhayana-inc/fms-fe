@@ -16,12 +16,12 @@ import {
     fetchVendorOptions
 } from '../APIs/DropdownOptions/api';
 
-import { 
-    fetchAllFileRecords, 
+import {
+    fetchAllFileRecords,
     insertFileRecord
 } from '../APIs/FileRecords/api';
 
-import  {mapData, vendorDataFilter} from '../../mapper/dataMapper';
+import { mapData, vendorDataFilter } from '../../mapper/dataMapper';
 import { validateEmail } from './formValidation';
 import EditInfoIcon from '../InfoIconTooltip/EditInfoIcon';
 
@@ -32,7 +32,7 @@ import EditInfoIcon from '../InfoIconTooltip/EditInfoIcon';
 
 export default function Form() {
     const formInitialState = {
-        fileMasterId:'',
+        fileMasterId: '',
         fileName: '',
         fileDate: '',
         vendorName: '',
@@ -47,18 +47,18 @@ export default function Form() {
         isActive: true,
         sampleFile: null,
         emailID: '',
-      };
+    };
 
     const [formInputData, setFormInputData] = useState(formInitialState);
-    
+
     // const [vendorName, setVendorName] = useState("");
     const [FixedLength, setFixedLength] = useState(false);
-    
+
     const [formData, setFormData] = useState(new FormData());
     let sourcepath = pathConfiguration.sourcepathprefix + `${formInputData.vendorName}/${formInputData.fileName}` + pathConfiguration.sourcepathsufix;
     let destinationpath = pathConfiguration.destinationpathprefix + `${formInputData.vendorName}/${formInputData.fileName}`;
-    
-    
+
+
     // Local Arrays for storing the data of form dropdowns and files...
     const [delimiterData, setDelimiterData] = useState([]);
     const [vendorData, setVendorData] = useState([]);
@@ -66,8 +66,8 @@ export default function Form() {
     const [filetypeData, setfiletypeData] = useState([]);
     const [editMode, setEditMode] = useState(false);
     const [records, setRecords] = useState([]);
-    
-    
+
+
     const [api, contextHolder] = notification.useNotification();
     const [loading, setLoading] = useState(false);
     const [selected, setSelected] = useState(null);
@@ -76,41 +76,41 @@ export default function Form() {
     const handleChangeTest = (event) => {
         const { name, value } = event.target;
         setFormInputData((prevFormData) => ({
-          ...prevFormData,
-          [name]: value,
+            ...prevFormData,
+            [name]: value,
         }));
         // edge case if vendor name changes then you need to again select the file for the new vendor...
-        if (name == "vendorName"){
+        if (name == "vendorName") {
             setSelected(null);
         }
-      };
+    };
 
-      
-// Setting the file values...
-      const handleFileChangeTest = (event) => {
+
+    // Setting the file values...
+    const handleFileChangeTest = (event) => {
         const file = event.target.files[0];
-        const {name} = event.target;
+        const { name } = event.target;
         setFormInputData((prevFormData) => ({
-          ...prevFormData,
-          [name]:file,
+            ...prevFormData,
+            [name]: file,
         }));
-      };
+    };
 
     //   Setting the checkbox values...
-      const handleCheckboxChangeTest = (event) => {
+    const handleCheckboxChangeTest = (event) => {
         const { name, checked } = event.target;
         setFormInputData((prevFormInputData) => ({
-          ...prevFormInputData,
-          [name]: checked,
+            ...prevFormInputData,
+            [name]: checked,
         }));
-      };
+    };
 
     //   Sumbitting the form and making the fetch Post call...
-      const handleSubmitTest = (e)=>{
+    const handleSubmitTest = (e) => {
         e.preventDefault();
         formInputData.sourcePath = sourcepath;
         formInputData.destinationPath = destinationpath;
-        var vID = vendorData.find(item => item.name === formInputData.vendorName);        
+        var vID = vendorData.find(item => item.name === formInputData.vendorName);
         const formDataTest = new FormData();
 
         // Iterate through the formInputData object and append all fields to formData
@@ -119,13 +119,13 @@ export default function Form() {
             // console.log(key, " -" , value);
         }
         // edge case for mapping vendorName to clientId for making the fetch call...
-        if(isNaN(formDataTest.get('vendorName'))){
-            formDataTest.set('vendorName',vID.id);
+        if (isNaN(formDataTest.get('vendorName'))) {
+            formDataTest.set('vendorName', vID.id);
         }
         // for (const [key, value] of formDataTest) {
         //     console.log(key, value);
         //   }
-        
+
         let email = formDataTest.get('emailID');
         setLoading(true);
 
@@ -137,34 +137,36 @@ export default function Form() {
             console.log('jjjj');
             const res = insertFileRecord(formDataTest);
             res.then((data) => {
-                        if (data.error == false) {
-                            setLoading(false);
-                            
-                            openNotificationWithIcon('success', 'File uploaded successfully', data.status);
-                            // setFormInputData(data.data);
-                            // console.log(data.data);
-                        }
-                        else {
-                            setLoading(false);
-                            openNotificationWithIcon('error', 'Error uploading file', data.status)
-                        }
-                    }).catch((error)=>{
-                        console.log('error: ',error);
-                    })
-        };
-        
-      }
+                if (data.error == false) {
+                    setLoading(false);
 
-     
-// Select the file from the search bar...
+                    openNotificationWithIcon('success', 'File uploaded successfully', data.status);
+                    setFormInputData(formInitialState);
+                    setEditMode(false);
+                    // setFormInputData(data.data);
+                    // console.log(data.data);
+                }
+                else {
+                    setLoading(false);
+                    openNotificationWithIcon('error', 'Error uploading file', data.status)
+                }
+            }).catch((error) => {
+                console.log('error: ', error);
+            })
+        };
+
+    }
+
+
+    // Select the file from the search bar...
     const handleChangeSelectFile = (selectedOption) => {
         setSelected(selectedOption);
-        
+
     };
 
-   
-        
-    
+
+
+
 
     // --- Style for Slect list display---
     const customStyles = {
@@ -190,40 +192,40 @@ export default function Form() {
         });
     };
 
-    
-   
-    
-// for file selection and set the properties of that file...
-useEffect(()=>{
-    if (selected){
-        console.log('Not');
-        let id = selected.value;
-        let row = records.find((item)=> item.fileMasterId === id);
-        if (row.fixedLength === "false"){
-            row.fixedLength = false;
-        }
-        if (row.isActive === "false"){
-            row.isActive = false;
-        }
-        if (row.fixedLength === "true"){
-            row.fixedLength = true;
-        }
-        if (row.isActive === "true"){
-            row.isActive = true;
-        }
-        // reverse mapping of clientID --> Vendor Name
-        var vID = vendorData.find(item => item.id == row.clientID);  
-        row.vendorName = vID.name;
-        console.log('vid: ',vID);
-        console.log('Selected row: ', row);
-        setFormInputData(row);
-        console.log('my data:',formInputData);
-        
 
-    }
-},[selected])
 
-// for fetching all the dropdown data and file records...
+
+    // for file selection and set the properties of that file...
+    useEffect(() => {
+        if (selected) {
+            console.log('Not');
+            let id = selected.value;
+            let row = records.find((item) => item.fileMasterId === id);
+            if (row.fixedLength === "false") {
+                row.fixedLength = false;
+            }
+            if (row.isActive === "false") {
+                row.isActive = false;
+            }
+            if (row.fixedLength === "true") {
+                row.fixedLength = true;
+            }
+            if (row.isActive === "true") {
+                row.isActive = true;
+            }
+            // reverse mapping of clientID --> Vendor Name
+            var vID = vendorData.find(item => item.id == row.clientID);
+            row.vendorName = vID.name;
+            console.log('vid: ', vID);
+            console.log('Selected row: ', row);
+            setFormInputData(row);
+            console.log('my data:', formInputData);
+
+
+        }
+    }, [selected])
+
+    // for fetching all the dropdown data and file records...
     useEffect(() => {
         fetchDelimiterOptions()
             .then((data) => setDelimiterData(data))
@@ -245,31 +247,36 @@ useEffect(()=>{
             .then((data) => setRecords(data))
             .catch((error) => console.error('error setting dropdown options:', error));
 
-           
-        }, [])
+
+    }, [editMode])
 
     // changing the list of file-select on the basis of vendor name...
-    var vendorFiles =[];
-    if (formInputData.vendorName){
+    var vendorFiles = [];
+    if (formInputData.vendorName) {
         // mapping of Vendor Name --> ClientID...
         var vID = vendorData.find(item => item.name === formInputData.vendorName);
-        vendorFiles = vendorDataFilter(records,vID.id);
+        vendorFiles = vendorDataFilter(records, vID.id);
     }
 
-   
-    
+
+
 
     const fileNamesAndIds = mapData(records);
 
     const VendorFileNamesAndIds = mapData(vendorFiles);
 
- 
+
     return (
         <div>
 
             <div className={styles.editContainer}>
-                <button className={"btn" + " " + styles.buttonBgColor} onClick={()=>{setEditMode(true);setFormInputData(formInitialState);}} data-bs-toggle="tooltip" data-bs-placement="bottom" title={infoDescriptions.editinfodescription}>Edit &nbsp;<i className="bi bi-pencil"></i></button>&nbsp; <EditInfoIcon />
-                {editMode?<button className={"btn" + " " + styles.buttonBgColor} onClick={()=>{setEditMode(false);setFormInputData(formInitialState);}} data-bs-toggle="tooltip" data-bs-placement="bottom">Cancel&nbsp;<i className="bi bi-x-circle"></i></button>:""}
+                <div>
+                <button className={"btn" + " " + styles.buttonBgColor} onClick={() => { setEditMode(true); setFormInputData(formInitialState); }} data-bs-toggle="tooltip" data-bs-placement="bottom" title={infoDescriptions.editinfodescription}>Edit &nbsp;<i className="bi bi-pencil"></i></button>&nbsp; <EditInfoIcon />
+                <br />{editMode ? <button className={"btn" + " " + styles.buttonBgColor} onClick={() => { setEditMode(false); setFormInputData(formInitialState); }} data-bs-toggle="tooltip" data-bs-placement="bottom">Cancel&nbsp;<i className="bi bi-x-circle"></i></button> : ""}
+                </div>
+                <div>
+                </div>
+                
                 {/* <EditInfoIcon description={infoDescriptions.editinfodescription} /> */}
             </div>
             <div className='container'>
@@ -279,7 +286,7 @@ useEffect(()=>{
                         <form>
 
                             <div className='row p-3' style={{ position: 'relative' }}>
-                                <div className='col-4 p-2'>
+                                <div className='col-4 p-4'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputFileName" className={"p-2" + " " + styles.labelDark}>Filename</label>
                                         {!editMode ?
@@ -296,12 +303,12 @@ useEffect(()=>{
                                     </div>
                                 </div>
 
-                                <div className='col-4 p-2'>
+                                <div className='col-4 p-4'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
 
                                         <label className={"p-2" + " " + styles.labelDark}>FileDate</label>
                                         <br />
-                                        <select required onChange={handleChangeTest} value={formInputData.fileDate} name="fileDate" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select required onChange={handleChangeTest} value={formInputData.fileDate} name="fileDate" className={"custom-select form-control btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
 
                                             {filedateData.map((data, i) => {
@@ -313,12 +320,12 @@ useEffect(()=>{
                                     </div>
                                 </div>
 
-                                <div className='col-4 p-2' >
+                                <div className='col-4 p-4' >
                                     <div className={"form-group" + " " + styles.colDisplay}>
 
                                         <label className={"p-2" + " " + styles.labelDark}>Vendor Name</label>
                                         <br />
-                                        <select required onChange={handleChangeTest} value={formInputData.vendorName} name="vendorName" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select required onChange={handleChangeTest} value={formInputData.vendorName} name="vendorName" className={"custom-select form-control btn" + " " + styles.dropdownInput} >
                                             <option defaultValue value="">Select</option>
 
                                             {vendorData.map((data, i) => {
@@ -331,7 +338,7 @@ useEffect(()=>{
 
                                     </div>
                                 </div>
-                                <div className={'col-4 p-2'}>
+                                <div className={'col-4 p-4'}>
                                     <div className={"form-group" + " " + styles.colDisplay} >
                                         <label className={"p-2" + " " + styles.labelDark}>Source Path</label>
                                         <input type="text" readOnly value={sourcepath} className={styles.disableInput + " " + "form-control"} id="exampleInputSourcePath" placeholder="Enter source path..." />
@@ -339,17 +346,17 @@ useEffect(()=>{
                                     </div>
 
                                 </div>
-                                <div className={'col-4 p-2'}>
+                                <div className={'col-4 p-4'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2" + " " + styles.labelDark}>Destination Path</label>
-                                        <input type="text" readOnly value={destinationpath} style={{ "width": "350px" }} className={styles.disableInput + " " + "form-control"} id="exampleInputDestinationPath" placeholder="Enter destination path..." />
+                                        <input type="text" readOnly value={destinationpath}  className={styles.disableInput + " " + "form-control"} id="exampleInputDestinationPath" placeholder="Enter destination path..." />
                                     </div>
                                 </div>
-                                <div className='col-4 p-2'>
+                                <div className='col-4 p-4'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2" + " " + styles.labelDark}>Allowed File</label>
                                         <br />
-                                        <select required value={formInputData.fileTypeID} onChange={handleChangeTest} name="fileTypeID" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select required value={formInputData.fileTypeID} onChange={handleChangeTest} name="fileTypeID" className={"custom-select form-control btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
 
                                             {filetypeData.map((data, i) => {
@@ -363,7 +370,7 @@ useEffect(()=>{
                             </div>
                             <hr />
                             <div className='row p-3'>
-                                <div className='col-4 p-2'>
+                                <div className='col-4 p-4'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputDbnotebook" className={"p-2" + " " + styles.labelDark}>DBNotebook</label>
                                         <input type="text" value={formInputData.dbNotebook} onChange={handleChangeTest} name='dbNotebook' className="form-control" id="exampleInputDbnotebook" placeholder="Enter dbnotebook name..." />
@@ -372,23 +379,23 @@ useEffect(()=>{
 
 
 
-                                <div className='col-4 p-2'>
+                                <div className='col-4 p-4'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2" + " " + styles.labelDark}>Insertion Mode</label>
                                         {/* &nbsp;&nbsp;&nbsp;&nbsp; */}
                                         <br />
-                                        <select onChange={handleChangeTest} value={formInputData.insertionMode} name="insertionMode" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select onChange={handleChangeTest} value={formInputData.insertionMode} name="insertionMode" className={"custom-select form-control btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
                                             <option value="Append">Append</option>
                                             <option value="Overwrite">Overwrite</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div className='col-4 p-2 '  >
+                                <div className='col-4 p-4'  >
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2" + " " + styles.labelDark}>Delimiter</label>
                                         <br />
-                                        <select onChange={handleChangeTest} value={formInputData.delimiter} name="delimiter" className={"custom-select btn" + " " + styles.dropdownInput} >
+                                        <select onChange={handleChangeTest} value={formInputData.delimiter} name="delimiter" className={"custom-select form-control btn" + " " + styles.dropdownInput} >
                                             <option defaultValue>Select</option>
 
                                             {delimiterData.map((data, i) => {
@@ -404,7 +411,7 @@ useEffect(()=>{
                             </div>
                             <hr />
                             <div className='row p-3'>
-                                <div className={'col-4 p-2'}>
+                                <div className={'col-4 p-4'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2 form-check-label" + " " + styles.labelDark} htmlFor="flexCheckDefault">
                                             FixedLength
@@ -413,17 +420,17 @@ useEffect(()=>{
                                         <input onChange={handleCheckboxChangeTest} checked={formInputData.fixedLength} name="fixedLength" className={styles.checkBox + " " + styles.checkboxiconFixedlength} type="checkbox" />
                                     </div>
                                 </div>
-                                <div className={'col-4 p-2'}>
+                                <div className={'col-4 p-4'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2" + " " + styles.labelDark}>Download template file</label><br /><a className={styles.downloadFileIcon + " " + styles.checkboxiconDownload} href={formData.fixedLength ? downloadFixedLengthTemplateFile : downloadTemplateFile} download={FixedLength ? "Fixed length template file" : "Template file"} target='_blank' rel='noreferrer'><i className="bi bi-cloud-arrow-down-fill"></i></a>
                                     </div>
 
                                 </div>
-                                <div className={'col-4 p-2'}>
+                                <div className={'col-4 p-4'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
 
                                         <label htmlFor="exampleInputTemplateFile" className={"p-2" + " " + styles.labelDark}>Template File</label>
-                                        <input onChange={handleFileChangeTest} type="file"   name='templateFile' className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateDownload" />
+                                        <input onChange={handleFileChangeTest} type="file" name='templateFile' className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateDownload" />
                                     </div>
                                 </div>
 
@@ -432,43 +439,43 @@ useEffect(()=>{
                             <hr />
                             <div className='row p-3'>
 
-                                <div className={'col-4 p-2'}>
+                                <div className={'col-4 p-4'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2 form-check-label" + " " + styles.labelDark} htmlFor="flexCheckDefault">
                                             Is Active
                                         </label>
-                                        <input onChange={handleCheckboxChangeTest} disabled={!editMode} checked={formInputData.isActive}  name="isActive" className={styles.checkBox + " " + styles.checkboxiconIsactive} type="checkbox" />
+                                        <input onChange={handleCheckboxChangeTest} disabled={!editMode} checked={formInputData.isActive} name="isActive" className={styles.checkBox + " " + styles.checkboxiconIsactive} type="checkbox" />
                                     </div>
 
                                 </div>
-                                <div className={'col-4 p-2'}>
+                                <div className={'col-4 p-4'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputTemplateUpload" className={"p-2" + " " + styles.labelDark}>Sample File</label>
-                                        <input onChange={handleFileChangeTest} name='sampleFile'  type="file" className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateUpload" />
+                                        <input onChange={handleFileChangeTest} name='sampleFile' type="file" className={"form-control" + " " + styles.selectFileInput} id="exampleInputTemplateUpload" />
                                     </div>
                                 </div>
 
 
-                                <div className='col-4 p-2'>
+                                <div className='col-4 p-4'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputEmail" className={"p-2" + " " + styles.labelDark}>Email</label>
-                                        <input onChange={handleChangeTest} value={formInputData.emailID} type="email" name='emailID' style={{ "width": "300px" }} className="form-control" id="exampleInputEmail" placeholder="Enter email..." />
+                                        <input onChange={handleChangeTest} value={formInputData.emailID} type="email" name='emailID'  className="form-control" id="exampleInputEmail" placeholder="Enter email..." />
                                     </div>
 
                                 </div>
                             </div>
                             <hr />
                             <div className='row p-3'>
-                                <div className='col-4 p-2'>
+                                <div className='col-4 p-4'>
 
                                 </div>
-                                <div className='col-4 p-2'>
+                                <div className='col-4 p-4'>
                                     <button className={"btn" + " " + styles.buttonBgColor} onClick={handleSubmitTest}> {!editMode ? (loading ? "Submitting..." : "Submit") : "Update"}</button>
                                     &nbsp;&nbsp;
-                                   {/* {editMode ?"": <button  onClick={setFormInputData(formInitialState)} className={"btn" + " " + styles.buttonBgColor} >Reset</button>} */}
-                                   {!editMode?<button className={"btn" + " " + styles.buttonBgColor} onClick={()=>{setFormInputData(formInitialState);}} data-bs-toggle="tooltip" data-bs-placement="bottom">Reset</button>:""}
+                                    {/* {editMode ?"": <button  onClick={setFormInputData(formInitialState)} className={"btn" + " " + styles.buttonBgColor} >Reset</button>} */}
+                                    {!editMode ? <button className={"btn" + " " + styles.buttonBgColor} onClick={() => { setFormInputData(formInitialState); }} data-bs-toggle="tooltip" data-bs-placement="bottom">Reset</button> : ""}
                                 </div>
-                                <div className='col-4 p-2'>
+                                <div className='col-4 p-4'>
 
                                 </div>
                             </div>

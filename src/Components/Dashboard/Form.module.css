@@ -6,7 +6,7 @@
     border: 0.5px solid lightgray;
     float: left;
     /* margin-right: 200px; */
-    width: 350px;
+    /* width: 350px; */
     /* padding: 4px; */
 }
 
@@ -61,7 +61,7 @@
 
 
 .selectFileInput{
-    width: 350px;
+    /* width: 350px; */
 }
 
 .editButton{
