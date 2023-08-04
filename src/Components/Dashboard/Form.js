@@ -82,6 +82,9 @@ export default function Form() {
         // edge case if vendor name changes then you need to again select the file for the new vendor...
         if (name == "vendorName") {
             setSelected(null);
+            // if (editMode){
+            //     setFormInputData(formInitialState);
+            // }
         }
     };
 
@@ -126,8 +129,14 @@ export default function Form() {
         //     console.log(key, value);
         //   }
 
+        // if (selected)
+
         let email = formDataTest.get('emailID');
         setLoading(true);
+
+        if (editMode && (selected == null)){
+            openNotificationWithIcon('error','information can not be updated','It seems that you have not selected any file, Please select a file to update information...');
+        }
 
         if (!validateEmail(email)) {
             setLoading(false);
@@ -272,7 +281,7 @@ export default function Form() {
             <div className={styles.editContainer}>
                 <div>
                 <button className={"btn" + " " + styles.buttonBgColor} onClick={() => { setEditMode(true); setFormInputData(formInitialState); }} data-bs-toggle="tooltip" data-bs-placement="bottom" title={infoDescriptions.editinfodescription}>Edit &nbsp;<i className="bi bi-pencil"></i></button>&nbsp; <EditInfoIcon />
-                <br />{editMode ? <button className={"btn" + " " + styles.buttonBgColor} onClick={() => { setEditMode(false); setFormInputData(formInitialState); }} data-bs-toggle="tooltip" data-bs-placement="bottom">Cancel&nbsp;<i className="bi bi-x-circle"></i></button> : ""}
+                <br />{editMode ? <button className={"btn" + " " + styles.cancelBtn} onClick={() => { setEditMode(false); setFormInputData(formInitialState); }} data-bs-toggle="tooltip" data-bs-placement="bottom">Cancel</button> : ""}
                 </div>
                 <div>
                 </div>
@@ -285,7 +294,7 @@ export default function Form() {
                     loading ? <ProgressPage /> : <>
                         <form>
 
-                            <div className='row p-3' style={{ position: 'relative' }}>
+                            <div className='row p-2' style={{ position: 'relative' }}>
                                 <div className='col-4 p-4'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputFileName" className={"p-2" + " " + styles.labelDark}>Filename</label>
@@ -369,7 +378,7 @@ export default function Form() {
                                 </div>
                             </div>
                             <hr />
-                            <div className='row p-3'>
+                            <div className='row p-2'>
                                 <div className='col-4 p-4'>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label htmlFor="exampleInputDbnotebook" className={"p-2" + " " + styles.labelDark}>DBNotebook</label>
@@ -410,7 +419,7 @@ export default function Form() {
 
                             </div>
                             <hr />
-                            <div className='row p-3'>
+                            <div className='row p-2'>
                                 <div className={'col-4 p-4'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
                                         <label className={"p-2 form-check-label" + " " + styles.labelDark} htmlFor="flexCheckDefault">
@@ -437,7 +446,7 @@ export default function Form() {
 
                             </div>
                             <hr />
-                            <div className='row p-3'>
+                            <div className='row p-2'>
 
                                 <div className={'col-4 p-4'}>
                                     <div className={"form-group" + " " + styles.colDisplay}>
@@ -465,17 +474,17 @@ export default function Form() {
                                 </div>
                             </div>
                             <hr />
-                            <div className='row p-3'>
-                                <div className='col-4 p-4'>
+                            <div className='row p-2'>
+                                <div className='col-4 p-2'>
 
                                 </div>
-                                <div className='col-4 p-4'>
+                                <div className='col-4 p-2'>
                                     <button className={"btn" + " " + styles.buttonBgColor} onClick={handleSubmitTest}> {!editMode ? (loading ? "Submitting..." : "Submit") : "Update"}</button>
                                     &nbsp;&nbsp;
                                     {/* {editMode ?"": <button  onClick={setFormInputData(formInitialState)} className={"btn" + " " + styles.buttonBgColor} >Reset</button>} */}
                                     {!editMode ? <button className={"btn" + " " + styles.buttonBgColor} onClick={() => { setFormInputData(formInitialState); }} data-bs-toggle="tooltip" data-bs-placement="bottom">Reset</button> : ""}
                                 </div>
-                                <div className='col-4 p-4'>
+                                <div className='col-4 p-2'>
 
                                 </div>
                             </div>

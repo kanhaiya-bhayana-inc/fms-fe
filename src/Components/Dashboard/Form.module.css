@@ -101,3 +101,12 @@
 .seachableFileDropdown{
     width: 408px;
 }
+.cancelBtn{
+    background-color: #DC3545;
+    color: white;
+}
+.cancelBtn:hover{
+    background-color: white;
+    color: #DC3545;
+    border: 1px solid #DC3545;
+}
