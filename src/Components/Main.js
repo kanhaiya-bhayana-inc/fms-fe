@@ -6,7 +6,7 @@ import Footer from './Footer/Footer'
 export default function Main() {
   
   return (
-    <div className='text-center'>
+    <div className='text-center ' style={{backgroundColor:'#FFFFFF'}}>
     <Navbar />
     <Outlet />
     <Footer />

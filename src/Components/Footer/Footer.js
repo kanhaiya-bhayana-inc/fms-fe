@@ -68,7 +68,23 @@ export default function Footer() {
       {/* <!-- Section: Text --> */}
       <section className="mb-5">
         <div className="row d-flex text-white justify-content-center">
-          <div className="col-lg-8">
+          <div className="col-lg-8 p-3">
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt
+              distinctio earum repellat quaerat voluptatibus placeat nam,
+              commodi optio pariatur est quia magnam eum harum corrupti
+              dicta, aliquam sequi voluptate quas.
+            </p>
+          </div>
+          <div className="col-lg-8 p-3">
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt
+              distinctio earum repellat quaerat voluptatibus placeat nam,
+              commodi optio pariatur est quia magnam eum harum corrupti
+              dicta, aliquam sequi voluptate quas.
+            </p>
+          </div>
+          <div className="col-lg-8 p-3">
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt
               distinctio earum repellat quaerat voluptatibus placeat nam,
@@ -78,22 +94,15 @@ export default function Footer() {
           </div>
         </div>
       </section>
-      {/* <!-- Section: Text --> */}
-
-      {/* <!-- Section: Social --> */}
      
-      {/* <!-- Section: Social --> */}
     </div>
-    {/* <!-- Grid container --> */}
-
-    {/* <!-- Copyright --> */}
+  
     <div
-         className={"text-center text-white p-3 " + styles.tempCss2}
+         className={"text-white p-3 " + styles.tempCss2}
          >
-      © 2023 Copyright: &nbsp;
-      <a className="text-white" href="#"
-         >Assetmark.com</a
-        >
+      
+      <h6 className="text-white"
+         > © Copyright 2023 Incedo Inc.</h6>
     </div>
    
   </footer>

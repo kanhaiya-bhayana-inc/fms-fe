@@ -152,6 +152,7 @@ export default function Form() {
                     openNotificationWithIcon('success', 'File uploaded successfully', data.status);
                     setFormInputData(formInitialState);
                     setEditMode(false);
+                    setSelected(null);
                     // setFormInputData(data.data);
                     // console.log(data.data);
                 }
