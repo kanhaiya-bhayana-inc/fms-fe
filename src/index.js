@@ -5,11 +5,15 @@ import App from './App';
 
 import { BrowserRouter as  Router } from 'react-router-dom';
 import reportWebVitals from './reportWebVitals';
+import { createHashHistory } from '@remix-run/router';
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const history = createHashHistory();
+
 root.render(
   <React.StrictMode>
-        <Router>
+        <Router history={history}>
           <App />
           </Router>
   </React.StrictMode>
